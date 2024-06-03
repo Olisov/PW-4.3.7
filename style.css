@@ -1,0 +1,82 @@
+@font-face {
+    font-family: "Roboto";
+    font-display: swap;
+    src: local(""), url("/Roboto-Regular.ttf") format("ttf");
+    font-weight: normal; 
+    font-style: normal; 
+}
+
+html {
+    font-family: 'Roboto', sans-serif;
+}
+
+.main {
+    width: 661px;
+    margin: 0 auto;
+    padding: 62px 74px;
+    background-color: #C4C4C4;
+}
+
+.search {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
+}
+
+.search__input {
+    font-size: 48px;
+    padding: 12px;
+}
+
+.search__guess {
+    font-size: 30px;
+    border: 2px solid black;
+    background-color: #E3E3E3;
+    padding: 12px;
+}
+
+.search__guess:hover {
+    background-color: #65CDF9;
+}
+
+.repo-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.repo-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 24px;
+    
+    border: 1px solid black;
+    padding: 8px 16px;
+}
+
+.repo-list__item {
+    background-color: #E27BEB;
+}
+
+.delete-btn {
+    background-image: url('/close-btn.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    align-self: center;
+    width: 45px;
+    height: 42px;
+    border: none;
+    background-color: transparent;
+    /* border: 1px solid; */
+}
+
+.delete-btn:hover {
+    border: 1px solid;
+}
+.delete-btn:active {
+    border: none;
+    background-color: white;
+}
+
+.repo-item__remove {
+    margin-right: 20px;
+}

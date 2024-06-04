@@ -20,7 +20,7 @@ html {
 .search {
     display: flex;
     flex-direction: column;
-    padding-bottom: 40px;
+    padding-bottom: 20px;
 }
 
 .search__input {
@@ -28,20 +28,31 @@ html {
     padding: 12px;
 }
 
-.search__guess {
+.guess-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.guess-list__item {
     font-size: 30px;
     border: 2px solid black;
     background-color: #E3E3E3;
     padding: 12px;
 }
 
-.search__guess:hover {
+.guess-list__item:hover {
     background-color: #65CDF9;
 }
 
 .repo-list {
     display: flex;
     flex-direction: column;
+    padding: 0;
+    margin: 0;
+    padding-top: 20px;
+    list-style: none;
+
 }
 
 .repo-item {

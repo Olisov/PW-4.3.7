@@ -2,62 +2,67 @@ const searchInput = document.querySelector('.search__input')
 const guessList = document.querySelector('.guess-list')
 const repoList = document.querySelector('.repo-list')
 
-
-
-const testBtn = document.querySelector('.test-btn')
-
 const guessFullData = []
 const repoArr = []
 
 
 async function requestData() {
-
     guessFullData.length = 0
-    guessList.innerHTML = ''
-    // let userInput = 'React'
-    console.log(this.userInput)
+    let userInput = this.value
+
+    if (userInput.length < 1 ) {
+        renderGuessList()
+        return
+    }
+    
     let url = `https://api.github.com/search/repositories`;
-    let urlRequest = url + '?q=' + encodeURIComponent(this.userInput)
+    let urlRequest = url + '?q=' + encodeURIComponent(userInput)
     let response = await fetch(urlRequest);
 
     if (!response.ok) {
-        renderGuessItem(0, `Ошибка соединения ${response.status}`)
+        renderNoGuess(`Ошибка соединения ${response.status}`)
         return
     }
     let responseBody = await response.json();
-    console.log(responseBody)
-    console.log(Array.isArray(responseBody.items))
     
-    guessFullData.length = 0
-
-    let arrLength = responseBody.items.length > 5 ? 5 : responseBody.items.length
-    if (!arrLength) {
-        renderGuessItem(0, 'Ничего не найдено :(')
-    } else {
-        for (let i = 0; i < arrLength; ++i ){
-            renderGuessItem(i, responseBody.items[i].name)
-            guessFullData.push(responseBody.items[i])
-        }
-    }
+    if(responseBody.items.length < 1) renderNoGuess('Ничего не найдено :(')
+    else renderGuessList(responseBody.items.slice(0, 5))
 }
 
-function renderGuessItem(id, text) {
+function renderGuessItem(text, id = '') {
     const newGuessItem = document.createElement('li')
     newGuessItem.classList.add('guess-list__item', `js-guess-${id}`)
     newGuessItem.textContent = text
     guessList.append(newGuessItem)
 }
 
+function renderNoGuess(text) {
+    guessList.innerHTML = ''
+    renderGuessItem(text)
+}
+
+function renderGuessList(guessArr) {
+    guessList.innerHTML = ''
+
+    if (guessArr === undefined) return
+
+    for (let i = 0; i < guessArr.length; ++i ){
+        renderGuessItem(guessArr[i].name, i)
+        guessFullData.push(guessArr[i])
+    }
+}
+
 function searchIdNodeClass(startsWith, classList) {
     for (nodeClass of classList) {
         if (~nodeClass.indexOf(startsWith)) {
+            if (nodeClass.match(/\d+/) === null) return -1
             return nodeClass.match(/\d+/)[0]
         }
     }
     return -1
 }
 
-function repoRender() {
+function renderRepoList() {
     repoList.innerHTML = ''
 
     repoArr.forEach((repo, id) => {
@@ -93,31 +98,33 @@ function repoRender() {
 
 function deleteRepoItem(id) {
     repoArr.splice(id, 1)
-    repoRender()
+    renderRepoList()
 }
 
-testBtn.addEventListener('click', {handleEvent: requestData, userInput: 'react',})
-guessList.addEventListener('click', event => {
-    // console.log(event.target)
-    // console.log(guessFullData)
-    
+searchInput.addEventListener('keyup', debounce(requestData, 180))
 
+guessList.addEventListener('click', event => {
     let currentId = searchIdNodeClass('js-guess-', Array.from(event.target.classList))
     if (currentId === -1) return
-    console.log(currentId)
-    // console.log(guessFullData, guessFullData)
-    // console.log(guessFullData[currentId])
+    
     repoArr.push(guessFullData[currentId])
-    console.log(repoArr)
-    repoRender()
+    searchInput.value = ''
+    guessFullData.length = 0
+
+    renderGuessList()
+    renderRepoList()
 
 })
 
 repoList.addEventListener('click', event => {
-    console.log(event.target)
     let currentId = searchIdNodeClass('js-delete-btn-', Array.from(event.target.classList))
     if (currentId > -1 ) deleteRepoItem(currentId)
-    // console.log(currentId)
-
-
 })
+
+function debounce(fn, ms) {
+    let lastRequest
+    return function() {
+        clearTimeout(lastRequest)
+        lastRequest = setTimeout(fn.bind(this, arguments), ms)
+    }
+}

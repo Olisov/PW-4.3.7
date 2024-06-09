@@ -6,32 +6,36 @@ const guessFullData = []
 const repoArr = []
 
 
-async function requestData() {
+async function requestData(event) {
     guessFullData.length = 0
-    let userInput = this.value
+    let userInput = event[0].target.value
 
     if (userInput.length < 1 ) {
         renderGuessList()
         return
     }
-    
-    let url = `https://api.github.com/search/repositories`;
-    let urlRequest = url + '?q=' + encodeURIComponent(userInput)
-    let response = await fetch(urlRequest);
+
+    let url = new URL(`https://api.github.com/search/repositories`);
+    url.searchParams.append('q', userInput)
+    url.searchParams.append('per_page', 5)
+
+    let response = await fetch(url);
 
     if (!response.ok) {
         renderNoGuess(`Ошибка соединения ${response.status}`)
         return
     }
     let responseBody = await response.json();
+
     
     if(responseBody.items.length < 1) renderNoGuess('Ничего не найдено :(')
-    else renderGuessList(responseBody.items.slice(0, 5))
+    else renderGuessList(responseBody.items)
 }
 
 function renderGuessItem(text, id = '') {
     const newGuessItem = document.createElement('li')
-    newGuessItem.classList.add('guess-list__item', `js-guess-${id}`)
+    newGuessItem.classList.add('guess-list__item')
+    newGuessItem.setAttribute('data-js-guess', `${id}`)
     newGuessItem.textContent = text
     guessList.append(newGuessItem)
 }
@@ -52,23 +56,12 @@ function renderGuessList(guessArr) {
     }
 }
 
-function searchIdNodeClass(startsWith, classList) {
-    for (nodeClass of classList) {
-        if (~nodeClass.indexOf(startsWith)) {
-            if (nodeClass.match(/\d+/) === null) return -1
-            return nodeClass.match(/\d+/)[0]
-        }
-    }
-    return -1
-}
-
 function renderRepoList() {
     repoList.innerHTML = ''
 
     repoArr.forEach((repo, id) => {
-
         const newRepoItem = document.createElement('li')
-        newRepoItem.classList.add('repo-list__item', 'repo-item', `js-repo-item-${id}`)
+        newRepoItem.classList.add('repo-list__item', 'repo-item')
 
         const repoData = document.createElement('div')
         repoData.classList.add('repo-item__data')
@@ -88,7 +81,8 @@ function renderRepoList() {
         newRepoItem.append(repoData)
 
         const deleteBtn = document.createElement('button')
-        deleteBtn.classList.add('repo-item__remove', 'delete-btn', `js-delete-btn-${id}`)
+        deleteBtn.classList.add('repo-item__remove', 'delete-btn')
+        deleteBtn.setAttribute('data-js-repo-item', `${id}`)
         newRepoItem.append(deleteBtn)
 
         repoList.append(newRepoItem)
@@ -101,11 +95,11 @@ function deleteRepoItem(id) {
     renderRepoList()
 }
 
-searchInput.addEventListener('keyup', debounce(requestData, 180))
+searchInput.addEventListener('input', debounce(requestData, 180))
 
 guessList.addEventListener('click', event => {
-    let currentId = searchIdNodeClass('js-guess-', Array.from(event.target.classList))
-    if (currentId === -1) return
+    const currentId = event.target.dataset['jsGuess']
+    if (!currentId) return
     
     repoArr.push(guessFullData[currentId])
     searchInput.value = ''
@@ -113,12 +107,12 @@ guessList.addEventListener('click', event => {
 
     renderGuessList()
     renderRepoList()
-
 })
 
 repoList.addEventListener('click', event => {
-    let currentId = searchIdNodeClass('js-delete-btn-', Array.from(event.target.classList))
-    if (currentId > -1 ) deleteRepoItem(currentId)
+    if (event.target.tagName === 'BUTTON') {
+        deleteRepoItem(event.target.dataset['jsRepoItem'])
+    }
 })
 
 function debounce(fn, ms) {
